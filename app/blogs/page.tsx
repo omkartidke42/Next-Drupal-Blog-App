@@ -5,6 +5,7 @@ import axios from "axios"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 
 interface Blog {
   id: string;
@@ -12,12 +13,19 @@ interface Blog {
     title: string;
     created: string;
   };
+  imageUrl?: string;
+  field_image?: {
+    uri?: {
+      url?: string;
+    };
+  };
 }
 
 export default function BlogPage() {
-  const [blogs, setBlogs] = useState<DrupalNode[]>([])
+  const [blogs, setBlogs] = useState<Blog[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
   useEffect(() => {
     fetch('https://drupal.ddev.site/jsonapi/node/blog?include=field_images', {
@@ -58,13 +66,59 @@ export default function BlogPage() {
       });
   }, []);
 
+  async function handleDelete(blogId: string) {
+    if (!blogId) {
+      console.error("Blog ID is missing");
+      return;
+    }
+
+    // Confirm before deleting
+    const confirmDelete = window.confirm("Are you sure you want to delete this blog post? This action cannot be undone.");
+
+    if (!confirmDelete) {
+      return; // User canceled the deletion
+    }
+
+    try {
+      const response = await fetch("/api/blog/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: blogId }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || `Failed to delete blog: ${response.status}`);
+      }
+
+      // Show success message
+      alert("Blog post deleted successfully!");
+      
+      // Update the blogs state to remove the deleted blog
+      setBlogs(prevBlogs => prevBlogs.filter(blog => blog.id !== blogId));
+    } catch (error: any) {
+      console.error("Error deleting blog:", error);
+      alert(`Error deleting blog: ${error.message}`);
+    }
+  }
+
+  const handleCreateBlog = () => {
+    router.push('/blog/create');
+  };
 
   if (loading) return <p className="p-6 text-white">Loading...</p>
+  
+  if (error) return <p className="p-6 text-white text-center">Error loading blogs: {error}</p>
 
   return (
     <main className="p-6 bg-inherit min-h-screen text-white">
-      <div className="flex justify-end ">
-        <button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold px-5 py-2 rounded-full shadow-md hover:shadow-xl hover:from-blue-600 hover:to-purple-700 transition duration-300">
+      <div className="flex justify-end mb-6">
+        <button 
+          onClick={handleCreateBlog}
+          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold px-5 py-2 rounded-full shadow-md hover:shadow-xl hover:from-blue-600 hover:to-purple-700 transition duration-300"
+        >
           Create Blog
         </button>
       </div>
@@ -75,8 +129,7 @@ export default function BlogPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {blogs.map((blog) => {
-            const imageUrl =
-              blog.field_image?.uri?.url || "/fallback.jpg"
+            const imageUrl = blog.imageUrl || "/fallback.jpg"
 
             return (
               <div
@@ -85,7 +138,7 @@ export default function BlogPage() {
               >
                 <div>
                   <Image
-                    src={blog.imageUrl || "/fallback.jpg"} // <- fallback must exist in /public
+                    src={imageUrl}
                     alt={blog.attributes.title || "Blog image"}
                     width={400}
                     height={200}
@@ -128,19 +181,4 @@ export default function BlogPage() {
       )}
     </main>
   )
-
-  async function handleDelete(blogId: string) {
-    try {
-      const res = await axios.delete(`/api/blog/${blogId}`);
-      if (res.status === 200) {
-        setBlogs(blogs.filter(blog => blog.id !== blogId));
-        alert("Blog deleted successfully!");
-      } else {
-        alert("Error deleting the blog.");
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Failed to delete the blog.");
-    }
-  }
 }
