@@ -73,7 +73,7 @@ export default function BlogPage() {
       {blogs.length === 0 ? (
         <p className="text-center">No blogs found.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {blogs.map((blog) => {
             const imageUrl =
               blog.field_image?.uri?.url || "/fallback.jpg"
@@ -92,8 +92,6 @@ export default function BlogPage() {
                     className="w-full h-48 object-cover"
                   />
 
-
-
                   <div className="p-4">
                     <h2 className="text-lg font-semibold mb-2 hover:underline">
                       {blog.attributes.title}
@@ -101,6 +99,26 @@ export default function BlogPage() {
                     <p className="text-sm text-gray-400">
                       Created on: {new Date(blog.attributes.created).toLocaleDateString()}
                     </p>
+                    <div className="mt-4 flex space-x-3">
+                      <Link href={`/blog/${blog.id}`}>
+                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full shadow-md transition duration-300 hover:shadow-lg">
+                          Read More
+                        </button>
+                      </Link>
+
+                      <Link href={`/blog/update/${blog.id}`}>
+                        <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-full shadow-md transition duration-300 hover:shadow-lg">
+                          Update
+                        </button>
+                      </Link>
+
+                      <button
+                        onClick={() => handleDelete(blog.id)}
+                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full shadow-md transition duration-300 hover:shadow-lg"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -110,4 +128,19 @@ export default function BlogPage() {
       )}
     </main>
   )
+
+  async function handleDelete(blogId: string) {
+    try {
+      const res = await axios.delete(`/api/blog/${blogId}`);
+      if (res.status === 200) {
+        setBlogs(blogs.filter(blog => blog.id !== blogId));
+        alert("Blog deleted successfully!");
+      } else {
+        alert("Error deleting the blog.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete the blog.");
+    }
+  }
 }
