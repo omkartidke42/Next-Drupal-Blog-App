@@ -63,6 +63,11 @@ export default function BlogPage() {
 
   return (
     <main className="p-6 bg-inherit min-h-screen text-white">
+      <div className="flex justify-end ">
+        <button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold px-5 py-2 rounded-full shadow-md hover:shadow-xl hover:from-blue-600 hover:to-purple-700 transition duration-300">
+          Create Blog
+        </button>
+      </div>
       <h1 className="text-3xl font-bold mb-6 text-center">Latest Blogs</h1>
 
       {blogs.length === 0 ? (

@@ -1,13 +1,10 @@
-import type { NextConfig } from "next";
-
-module.exports = {
-  images: {
-    domains: ['drupal.ddev.site'],
+const nextConfig = {
+  experimental: {
+    // if you're using Turbopack, keep this
   },
-};
+  images: {
+    domains: ['via.placeholder.com', 'drupal.ddev.site'],
+  },
+}
 
-const nextConfig: NextConfig = {
-  /* config options here */
-};
-
-export default nextConfig;
+export default nextConfig
