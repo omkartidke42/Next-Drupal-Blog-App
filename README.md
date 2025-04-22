@@ -74,21 +74,23 @@ Here are a few snapshots of what this app renders: Result Image Result Image Res
 
 💻 Running Locally
 
-```bash
 1️⃣ Clone the Repository :
 
 
+```bash
 git clone https://github.com/<your-username>/Next-Drupal-Blog-App.git
 cd Next-Drupal-app
 ```
 
-```bash
 2️⃣ Install Dependencies : 
+
+```bash
 npm install
 ```
 
+3️⃣ Setup Environment Variables :
+
 ```bash
-3️⃣ Setup Environment Variables
 Create a .env.local file in the root:
 
 NEXT_PUBLIC_API_URL=https://your-drupal-site.com/jsonapi
@@ -99,12 +101,14 @@ Ensure OAuth is enabled in your Drupal site and you’ve created a client with t
 ```
 
 
-```bash
 4️⃣ Start Development Server :
+
+```bash
 npm run dev
+```
+
 Now visit http://localhost:3000 to see the app in action.
 
-```
 
 🛠️ Technologies Used
 ⚡ Next.js 15 (App Router)
