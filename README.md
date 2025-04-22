@@ -18,25 +18,26 @@ This project serves as a practical guide for integrating Next.js App Router with
 We use two separate clients via next-drupal:
 
 
-📦 lib/drupal.ts (Public routes - for GET requests) :
+📦 src/lib/drupal.ts (Public routes - for GET requests) :
 
 ```bash
 import { NextDrupal } from "next-drupal"
 
 // Public (browser) client
-export const drupal = new NextDrupal(process.env.NEXT_PUBLIC_API_URL)
+export const drupal = new NextDrupal(process.env.NEXT_PUBLIC_DRUPAL_BASE_URL)
 ```
 
-📦 lib/server-drupal.ts (Public routes - for other requests) :
+📦 src/lib/drupal.ts (Public routes - for other requests) :
 ```bash
 import { NextDrupal } from "next-drupal"
 
-export const serverDrupal = new NextDrupal(process.env.NEXT_PUBLIC_API_URL, {
-  auth: {
-    clientId: process.env.DRUPAL_OAUTH_CLIENT_ID,
-    clientSecret: process.env.DRUPAL_CLIENT_SECRET,
-  },
-})
+export const drupal = new DrupalClient(process.env.NEXT_PUBLIC_DRUPAL_BASE_URL!, {
+    auth: {
+      clientId: process.env.DRUPAL_CLIENT_ID!,
+      clientSecret: process.env.DRUPAL_CLIENT_SECRET!,
+    },
+  })
+  
 
 ```
 
@@ -64,9 +65,11 @@ serverDrupal.deleteResource(type, uuid)
 
 📸 Results
 Here are a few snapshots of what this app renders: Result Image Result Image Result Image
-![Screenshot from 2025-04-22 09-57-23](https://github.com/user-attachments/assets/c2f26eec-f5fc-45c9-9734-0d25770a1ed2)
-![createBlog](https://github.com/user-attachments/assets/041bfbb6-7e76-4c22-bd49-06c22c8a738e)
-![EditBlog](https://github.com/user-attachments/assets/0e2ec747-a39a-48a1-99f4-968c85fae41d)
+![Screenshot from 2025-04-22 10-39-27](https://github.com/user-attachments/assets/b5336a58-2563-4e65-a2ba-e11f75040b49)
+![Screenshot from 2025-04-22 10-39-44](https://github.com/user-attachments/assets/7b095f78-ac2e-43d3-b2b6-a07b7602d2df)
+![Screenshot from 2025-04-22 10-39-52](https://github.com/user-attachments/assets/9ceffb4b-a6e5-4193-bbac-a51761a1ad84)
+![Screenshot from 2025-04-22 10-40-01](https://github.com/user-attachments/assets/fa4b5066-b9d6-44c4-8982-81789df2a0c9)
+
 
 
 💻 Running Locally
