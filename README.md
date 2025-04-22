@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+🧩 Next-Drupal-Blog-App
 
-## Getting Started
+A decoupled, CMS-powered blog application built with Next.js 15 and Drupal, demonstrating full CRUD operations and dynamic view rendering using the next-drupal library.
 
-First, run the development server:
+This project serves as a practical guide for integrating Next.js App Router with a Drupal backend, leveraging the JSON:API to manage and render dynamic blog content.
+
+🚀 Features
+🔄 Full CRUD functionality (Create, Read, Update, Delete) with Drupal resources.
+📊 Fetching and rendering Drupal Views with dynamic pagination.
+🧱 Clean component structure with server components for better performance.
+🧪 Follows best practices for data fetching and rendering in Next.js.
+
+
+🧠 Architecture & Setup
+🗂️ Drupal Client Configuration
+We use two separate clients via next-drupal:
+
+
+📦 lib/drupal.ts (Public routes - for GET requests) :
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+import { NextDrupal } from "next-drupal"
+
+// Public (browser) client
+export const drupal = new NextDrupal(process.env.NEXT_PUBLIC_API_URL)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+📦 lib/server-drupal.ts (Public routes - for other requests) :
+```bash
+import { NextDrupal } from "next-drupal"
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+export const serverDrupal = new NextDrupal(process.env.NEXT_PUBLIC_API_URL, {
+  auth: {
+    clientId: process.env.DRUPAL_OAUTH_CLIENT_ID,
+    clientSecret: process.env.DRUPAL_CLIENT_SECRET,
+  },
+})
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
 
-## Learn More
+🧰 What This App Uses from next-drupal
+Here are the main methods used from the next-drupal SDK:
 
-To learn more about Next.js, take a look at the following resources:
+🟢 Reading content:
+drupal.getResource(type, uuid) drupal.getView(viewId, { params }) drupal.getResourceCollection(type, { params })
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+🔴 Creating content:
+serverDrupal.createResource(type, payload)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+🟡 Updating content: 
+serverDrupal.updateResource(type, uuid, payload)
 
-## Deploy on Vercel
+⚫ Deleting content:
+serverDrupal.deleteResource(type, uuid)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+✅ Best Practices :
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+✅ Use drupal (public client) in server components only to fetch public data.
+✅ Use serverDrupal (authenticated client) for actions like creating or updating data.
+🚫 Avoid using next-drupal in client components — use it only in Server Components or API routes.
+✅ Always handle errors gracefully when working with getView, getResource, etc.
+
+📸 Results
+Here are a few snapshots of what this app renders: Result Image Result Image Result Image
+![Screenshot from 2025-04-22 09-57-23](https://github.com/user-attachments/assets/c2f26eec-f5fc-45c9-9734-0d25770a1ed2)
+![createBlog](https://github.com/user-attachments/assets/041bfbb6-7e76-4c22-bd49-06c22c8a738e)
+![EditBlog](https://github.com/user-attachments/assets/0e2ec747-a39a-48a1-99f4-968c85fae41d)
+
+
+💻 Running Locally
+
+```bash
+1️⃣ Clone the Repository :
+
+
+git clone https://github.com/<your-username>/Next-Drupal-Blog-App.git
+cd Next-Drupal-app
+```
+
+```bash
+2️⃣ Install Dependencies : 
+npm install
+``
+
+```bash
+3️⃣ Setup Environment Variables
+Create a .env.local file in the root:
+
+NEXT_PUBLIC_API_URL=https://your-drupal-site.com/jsonapi
+DRUPAL_CLIENT_ID=your-client-id
+DRUPAL_CLIENT_SECRET=your-client-secret
+Ensure OAuth is enabled in your Drupal site and you’ve created a client with the necessary scopes.
+
+```
+
+
+```bash
+4️⃣ Start Development Server :
+npm run dev
+Now visit http://localhost:3000 to see the app in action.
+
+```
+
+🛠️ Technologies Used
+⚡ Next.js 15 (App Router)
+
+🔌 Drupal JSON:API
+
+📦 next-drupal
+
+🎨 Tailwind CSS
+
+🧑‍💻 TypeScript
