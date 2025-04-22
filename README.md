@@ -12,7 +12,9 @@ This project serves as a practical guide for integrating Next.js App Router with
 
 
 🧠 Architecture & Setup
-🗂️ Drupal Client Configuration
+
+🗂️ Drupal Client Configuration :
+
 We use two separate clients via next-drupal:
 
 
@@ -80,7 +82,7 @@ cd Next-Drupal-app
 ```bash
 2️⃣ Install Dependencies : 
 npm install
-``
+```
 
 ```bash
 3️⃣ Setup Environment Variables
