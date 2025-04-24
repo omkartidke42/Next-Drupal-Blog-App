@@ -3,9 +3,11 @@
 import { DrupalNode } from "next-drupal"
 import axios from "axios"
 import { useEffect, useState } from "react"
+import { motion } from 'framer-motion'
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import SearchBar from "../components/SearchBar"
 
 interface Blog {
   id: string;
@@ -22,12 +24,50 @@ interface Blog {
 }
 
 export default function BlogPage() {
+
   const [blogs, setBlogs] = useState<Blog[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  // Add state to hold filtered blogs
+  const [filteredBlogs, setFilteredBlogs] = useState<Blog[]>([]);
+
+
+
+
+  const handleSearch = async (searchTerm: string) => {
+    console.log('Search term:', searchTerm); // Verify search term
+    try {
+      const apiUrl = '/api/search/blog_index'; // Adjust based on solution above
+      console.log('Making request to:', apiUrl);
+  
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ searchTerm })
+      });
+  
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(errorText);
+      }
+  
+      const result = await response.json();
+      console.log("Search results:", result);
+      // ... rest of your code
+    } catch (error) {
+      console.error("Full search error:", error);
+      // ... error handling
+    }
+  };
+
 
   useEffect(() => {
+    setLoading(true)
+
     fetch('https://drupal.ddev.site/jsonapi/node/blog?include=field_images', {
       headers: {
         Accept: 'application/vnd.api+json',
@@ -72,11 +112,10 @@ export default function BlogPage() {
       return;
     }
 
-    // Confirm before deleting
     const confirmDelete = window.confirm("Are you sure you want to delete this blog post? This action cannot be undone.");
 
     if (!confirmDelete) {
-      return; // User canceled the deletion
+      return; 
     }
 
     try {
@@ -95,7 +134,7 @@ export default function BlogPage() {
 
       // Show success message
       alert("Blog post deleted successfully!");
-      
+
       // Update the blogs state to remove the deleted blog
       setBlogs(prevBlogs => prevBlogs.filter(blog => blog.id !== blogId));
     } catch (error: any) {
@@ -109,75 +148,83 @@ export default function BlogPage() {
   };
 
   if (loading) return <p className="p-6 text-white">Loading...</p>
-  
+
   if (error) return <p className="p-6 text-white text-center">Error loading blogs: {error}</p>
 
   return (
-    <main className="p-6 bg-inherit min-h-screen text-white">
-      <div className="flex justify-end mb-6">
-        <button 
+    <main className="p-4 sm:p-6 bg-inherit min-h-screen text-white">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <SearchBar onSearch={handleSearch} />
+        <button
           onClick={handleCreateBlog}
-          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold px-5 py-2 rounded-full shadow-md hover:shadow-xl hover:from-blue-600 hover:to-purple-700 transition duration-300"
+          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold px-6 py-2 rounded-full shadow-md hover:shadow-xl hover:from-blue-600 hover:to-purple-700 transition duration-300"
         >
           Create Blog
         </button>
       </div>
-      <h1 className="text-3xl font-bold mb-6 text-center">Latest Blogs</h1>
 
-      {blogs.length === 0 ? (
-        <p className="text-center">No blogs found.</p>
+      <h1 className="text-4xl font-bold mb-8 text-center">Latest Blogs</h1>
+
+      {loading ? (
+        <div className="flex justify-center items-center min-h-[300px]">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : blogs.length === 0 ? (
+        <p className="text-center text-gray-400">No blogs found.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {blogs.map((blog) => {
-            const imageUrl = blog.imageUrl || "/fallback.jpg"
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          {(filteredBlogs.length > 0 ? filteredBlogs : blogs).map((blog) => {
+            const imageUrl = blog.imageUrl || '/fallback.jpg'
 
             return (
-              <div
+              <motion.div
                 key={blog.id}
                 className="bg-gray-900 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition"
+                whileHover={{ scale: 1.02 }}
               >
-                <div>
-                  <Image
-                    src={imageUrl}
-                    alt={blog.attributes.title || "Blog image"}
-                    width={400}
-                    height={200}
-                    className="w-full h-48 object-cover"
-                  />
-
-                  <div className="p-4">
-                    <h2 className="text-lg font-semibold mb-2 hover:underline">
-                      {blog.attributes.title}
-                    </h2>
-                    <p className="text-sm text-gray-400">
-                      Created on: {new Date(blog.attributes.created).toLocaleDateString()}
-                    </p>
-                    <div className="mt-4 flex space-x-3">
-                      <Link href={`/blog/${blog.id}`}>
-                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full shadow-md transition duration-300 hover:shadow-lg">
-                          Read More
-                        </button>
-                      </Link>
-
-                      <Link href={`/blog/update/${blog.id}`}>
-                        <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-full shadow-md transition duration-300 hover:shadow-lg">
-                          Update
-                        </button>
-                      </Link>
-
-                      <button
-                        onClick={() => handleDelete(blog.id)}
-                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full shadow-md transition duration-300 hover:shadow-lg"
-                      >
-                        Delete
+                <Image
+                  src={imageUrl}
+                  alt={blog.attributes.title || 'Blog image'}
+                  width={400}
+                  height={200}
+                  className="w-full h-48 object-cover"
+                />
+                <div className="p-4">
+                  <h2 className="text-xl font-semibold mb-2 hover:underline">
+                    {blog.attributes.title}
+                  </h2>
+                  <p className="text-sm text-gray-400">
+                    Created on:{' '}
+                    {new Date(blog.attributes.created).toLocaleDateString()}
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <Link href={`/blog/${blog.id}`}>
+                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full shadow transition duration-300">
+                        Read More
                       </button>
-                    </div>
+                    </Link>
+                    <Link href={`/blog/update/${blog.id}`}>
+                      <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-full shadow transition duration-300">
+                        Update
+                      </button>
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(blog.id)}
+                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full shadow transition duration-300"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )
           })}
-        </div>
+        </motion.div>
       )}
     </main>
   )
