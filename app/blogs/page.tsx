@@ -8,6 +8,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import SearchBar from "../components/SearchBar"
+import { useDebounce } from "use-debounce";
 
 interface Blog {
   id: string;
@@ -31,37 +32,48 @@ export default function BlogPage() {
   const router = useRouter()
   // Add state to hold filtered blogs
   const [filteredBlogs, setFilteredBlogs] = useState<Blog[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
+  const [reactions, setReactions] = useState<{ [key: string]: { [emoji: string]: number } }>({});
 
 
 
+  const handleSearch = (searchTerm: string) => {
+    const normalizedSearchTerm = searchTerm.trim().toLowerCase();
 
-  const handleSearch = async (searchTerm: string) => {
-    console.log('Search term:', searchTerm); // Verify search term
-    try {
-      const apiUrl = '/api/search/blog_index'; // Adjust based on solution above
-      console.log('Making request to:', apiUrl);
-  
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ searchTerm })
-      });
-  
-      console.log('Response status:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error response:', errorText);
-        throw new Error(errorText);
-      }
-  
-      const result = await response.json();
-      console.log("Search results:", result);
-      // ... rest of your code
-    } catch (error) {
-      console.error("Full search error:", error);
-      // ... error handling
+    if (normalizedSearchTerm === "") {
+      setFilteredBlogs([]);
+      return;
     }
+
+
+
+    const filtered = blogs.filter((blog) => {
+      const title = blog.attributes.title.toLowerCase();
+      return normalizedSearchTerm
+        .split(" ")
+        .every((word) => title.includes(word));
+    });
+
+    setFilteredBlogs(filtered);
+  };
+
+  useEffect(() => {
+    handleSearch(debouncedSearchTerm);
+  }, [debouncedSearchTerm]);
+
+  const handleReaction = (blogId: string, emoji: string) => {
+    setReactions((prevReactions) => {
+      const blogReactions = prevReactions[blogId] || {};
+      const currentCount = blogReactions[emoji] || 0;
+      return {
+        ...prevReactions,
+        [blogId]: {
+          ...blogReactions,
+          [emoji]: currentCount + 1,
+        },
+      };
+    });
   };
 
 
@@ -115,7 +127,7 @@ export default function BlogPage() {
     const confirmDelete = window.confirm("Are you sure you want to delete this blog post? This action cannot be undone.");
 
     if (!confirmDelete) {
-      return; 
+      return;
     }
 
     try {
@@ -180,6 +192,7 @@ export default function BlogPage() {
         >
           {(filteredBlogs.length > 0 ? filteredBlogs : blogs).map((blog) => {
             const imageUrl = blog.imageUrl || '/fallback.jpg'
+            const blogReactions = reactions[blog.id] || {};
 
             return (
               <motion.div
@@ -213,12 +226,25 @@ export default function BlogPage() {
                         Update
                       </button>
                     </Link>
+                    {/* Reaction Buttons */}
+
                     <button
                       onClick={() => handleDelete(blog.id)}
                       className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full shadow transition duration-300"
                     >
                       Delete
                     </button>
+                  </div>
+                  <div className="flex  items-center gap-3 mt-3">
+                    {["👍", "🔥", "😍", "🤔"].map((emoji) => (
+                      <button
+                        key={emoji}
+                        onClick={() => handleReaction(blog.id, emoji)}
+                        className="text-xl cursor-pointer"
+                      >
+                        {emoji} {blogReactions[emoji] || 0}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </motion.div>

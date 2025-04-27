@@ -1,31 +1,27 @@
-'use client'
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 
-export default function SearchBar({ onSearch }: { onSearch: (term: string) => void }) {
-  const [query, setQuery] = useState("")
+interface SearchBarProps {
+  onSearch: (searchTerm: string) => void;
+}
 
-  const handleSearch = () => {
-    if (query.trim() !== "") {
-      onSearch(query)
-    }
-  }
+export default function SearchBar({ onSearch }: SearchBarProps) {
+  const [input, setInput] = useState("");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInput(value);
+    onSearch(value); // call search immediately (or after debounce if you setup)
+  };
 
   return (
-    <div className="flex flex-col sm:flex-row gap-2 items-center mb-6 w-full">
-      <input
-        className="flex-grow px-4 py-2 rounded-lg border border-gray-600 bg-zinc-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search blogs..."
-      />
-      <button
-        onClick={handleSearch}
-        className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition"
-      >
-        Search
-      </button>
-    </div>
-  )
+    <input
+      type="text"
+      value={input}
+      onChange={handleChange}
+      placeholder="Search blogs..."
+      className="p-2 w-full sm:w-80 rounded-lg bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+    />
+  );
 }
