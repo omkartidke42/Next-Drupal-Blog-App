@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
+import ThemeSwitcher from '../theme-switcher'; // 💡 Add this import
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,7 +19,7 @@ const Navbar = () => {
         </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex gap-6">
+        <div className="hidden md:flex items-center gap-6">
           <Link href="/" className="hover:text-gray-400 transition">
             Home
           </Link>
@@ -31,6 +32,7 @@ const Navbar = () => {
           <Link href="/contact" className="hover:text-gray-400 transition">
             Contact
           </Link>
+          <ThemeSwitcher /> {/* ✨ Theme button here */}
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -54,6 +56,9 @@ const Navbar = () => {
           <Link href="/contact" className="block hover:text-gray-400" onClick={toggleMenu}>
             Contact
           </Link>
+          <div className="pt-4">
+            <ThemeSwitcher /> {/* ✨ Theme button in mobile too */}
+          </div>
         </div>
       )}
     </nav>
